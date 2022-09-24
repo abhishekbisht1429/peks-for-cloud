@@ -5,6 +5,8 @@
 #include <pbc/pbc.h>
 #include <vector>
 #include <fstream>
+#include<openssl/sha.h>
+#include "util.cpp"
 
 pairing_t pairing;
 
@@ -16,6 +18,9 @@ element_t sko;
 
 /* public key data owner */
 element_t pko;
+
+/* public key of consumer */
+element_t pkc;
 
 void serialize_element_t(element_t &e, std::ofstream &ofs) {
     uint32_t len = element_length_in_bytes(e);
@@ -86,7 +91,7 @@ void init() {
 }
 
 std::vector<std::string> load_keywords(int n) {
-    std::ifstream ifs("temp/keywords.txt");
+    std::ifstream ifs("../temp/keywords.txt");
     std::vector<std::string> keywords;
     for(int i=0; i<n; ++i) {
         std::string keyword;
@@ -102,8 +107,47 @@ int main() {
     // Load param
     init();
 
+    // load pkc - It must be created before this function is called
+    std::ifstream ifs_pkc("../temp/pko");
+    element_init_G2(pkc, pairing);
+    deserialize_element_t(pkc, ifs_pkc);
+
+    // select r in Z_p*
+    element_t r;
+    element_init_Zr(r, pairing);
+
+    // calculate c1
+    element_t c1, prod;
+    element_init_G2(c1, pairing);
+    element_init_Zr(prod, pairing);
+    element_mul(prod, sko, r);
+    element_pow_zn(c1, pkc, prod);
+
+    // calculate c2
+    element_t c2;
+    element_init_G2(c2, pairing);
+    element_pow_zn(c2, pko, r);
+
+    //initialize a pairing
+    pairing_pp_t pp;
+    pairing_pp_init(pp, c1, pairing); // x is some element of G1
+
     //select private key
-
     auto keywords = load_keywords(5);
+    std::vector<std::string> c;
+    for(auto w : keywords) {
+        element_t h2_res, pairing_res;
+        element_init_G1(h2_res, pairing);
+        element_init_GT(pairing_res, pairing);
 
+        h2(h2_res, w);
+        pairing_pp_apply(pairing_res, h2_res, pp);
+        std::string cw = h3(pairing_res);
+        std::cout<<cw<<"\n";
+        c.push_back(cw);
+    }
+
+    pairing_pp_clear(pp); // don't need pp anymore
+
+    /* TODO: Send c1, c2, c3, and c to Cloud server */
 }
