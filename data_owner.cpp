@@ -5,7 +5,7 @@
 #include <pbc/pbc.h>
 #include <vector>
 #include <fstream>
-#include<openssl/sha.h>
+#include <openssl/sha.h>
 #include "util.h"
 #include "tb_lib/http/http_client.h"
 #include "tb_lib/util.h"
@@ -24,25 +24,7 @@ element_t pko;
 /* public key of consumer */
 element_t pkc;
 
-template<typename charT>
-void serialize_element_t(element_t &e, std::basic_ostream<charT> &of) {
-    uint32_t len = element_length_in_bytes(e);
-    unsigned char buf[len];
-    element_to_bytes(buf, e);
-    of.write((charT*)&len, 4);
-    of.write((charT*)buf, len);
-}
-
-template<typename charT>
-void deserialize_element_t(element_t &e, std::basic_ifstream<charT> &is) {
-    uint32_t len;
-    is.read((charT*)&len, 4);
-    unsigned char buf[1024];
-    is.read((charT*)buf, len);
-    element_from_bytes(e, buf);
-}
-
-void init() {
+void init_do() {
     /* Load pairing */
     FILE *fp = std::fopen("../temp/param", "r");
     if(!fp) {
@@ -66,10 +48,11 @@ void init() {
     if(!ifs_g.is_open()) {
         element_random(g);
         std::ofstream ofs_g("../temp/g", std::ios::binary);
-        serialize_element_t<char>(g, ofs_g);
+        serialize_element_t(g, ofs_g);
     } else {
-        deserialize_element_t<char>(g, ifs_g);
+        deserialize_element_t(g, ifs_g);
     }
+    element_printf("g: %B\n", g);
 
     // load or generate sko
     element_init_Zr(sko, pairing);
@@ -77,21 +60,23 @@ void init() {
     if(!ifs_sko.is_open()) {
         element_random(sko);
         std::ofstream ofs_sko("../temp/sko", std::ios::binary);
-        serialize_element_t<char>(sko, ofs_sko);
+        serialize_element_t(sko, ofs_sko);
     } else {
-        deserialize_element_t<char>(sko, ifs_sko);
+        deserialize_element_t(sko, ifs_sko);
     }
+    element_printf("sko: %B\n", sko);
 
     // load of generate pko
     std::ifstream ifs_pko("../temp/pko");
     element_init_G2(pko, pairing);
-    if(!ifs_sko.is_open()) {
+    if(!ifs_pko.is_open()) {
         element_pow_zn(pko, g, sko);
         std::ofstream ofs_pko("../temp/pko", std::ios::binary);
-        serialize_element_t<char>(pko, ofs_pko);
+        serialize_element_t(pko, ofs_pko);
     } else {
-        deserialize_element_t<char>(pko, ifs_pko);
+        deserialize_element_t(pko, ifs_pko);
     }
+    element_printf("pko: %B\n", pko);
 }
 
 std::vector<std::string> load_keywords(int n) {
@@ -109,61 +94,58 @@ std::vector<std::string> load_keywords(int n) {
 
 int main() {
     // Load param
-    init();
+    init_do();
 
+    // TODO: fix the problem of creating keys before they are used
     // load pkc - It must be created before this function is called
-    std::ifstream ifs_pkc("../temp/pko");
+    std::ifstream ifs_pkc("../temp/pkc");
+    if(! ifs_pkc.is_open()) {
+        std::cout<<"Required PKC - run data consumer";
+        exit(0);
+    }
     element_init_G2(pkc, pairing);
-    deserialize_element_t<char>(pkc, ifs_pkc);
+    deserialize_element_t(pkc, ifs_pkc);
 
-    // select r in Z_p*
+    /* select r in Z_p* */
     element_t r;
-    element_init_Zr(r, pairing);
+    element_init_Zr(r, pairing); //TODO: check this out why isn't there any value for r ?
+    element_random(r);
+    element_printf("r: %B\n", r);
 
-    // calculate c1
+    /* calculate c1 */
     element_t c1, prod;
     element_init_G2(c1, pairing);
     element_init_Zr(prod, pairing);
     element_mul(prod, sko, r);
     element_pow_zn(c1, pkc, prod);
+    element_printf("c1: %B\n", c1);
 
-    // calculate c2
+    /* calculate c2 */
     element_t c2;
     element_init_G2(c2, pairing);
     element_pow_zn(c2, pko, r);
+    element_printf("c2: %B\n", c2);
 
     //select private key
     auto keywords = load_keywords(5);
     std::vector<tb_util::bytes> c;
+    c.push_back(tb_util::s2b(element_to_string(c1)));
+    c.push_back(tb_util::s2b(element_to_string(c2)));
     for(auto w : keywords) {
         std::cout<<w<<"\n";
         element_t h2_res, pairing_res;
         element_init_G1(h2_res, pairing);
         element_init_GT(pairing_res, pairing);
 
-        h2(h2_res, tb_util::s2b(w));
-
-//        std::cout<<"h2_res: ";
-//        serialize_element_t(h2_res, std::cout);
-//        std::cout<<"\n";
+        h2(h2_res, w);
+        element_printf("h2_res: %B\n", h2_res);
         element_pairing(pairing_res, h2_res, c1);
-//        std::cout<<"pairing_res: ";
-//        serialize_element_t(pairing_res, std::cout);
-//        std::cout<<"\n";
-        tb_util::bytes cw = h3(pairing_res);
-        tb_util::output_bytes(std::cout, cw);
-        c.push_back(cw);
+        element_printf("pairing_res: %B\n", pairing_res);
+        std::string cw = h3(pairing_res);
+        c.push_back(tb_util::s2b(cw));
     }
 
     /* Send c1, c2 and c to cloud server */
-    tb_util::bytes c1_bytes, c2_bytes;
-    bytes_ostream bos1(c1_bytes), bos2(c2_bytes);
-    serialize_element_t<unsigned char>(c1, bos1);
-    serialize_element_t<unsigned char>(c2, bos2);
-
-    c.push_back(c1_bytes);
-    c.push_back(c2_bytes);
-
     auto client = http::http_client();
     auto server_addr = net_socket::ipv4_address("127.0.0.1");
     auto server_port = 8500;

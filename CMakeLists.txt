@@ -35,9 +35,12 @@ add_executable(data_owner data_owner.cpp)
 target_link_libraries(data_owner pbc gmp util http)
 
 add_executable(server server.cpp)
-target_link_libraries(server http)
+target_link_libraries(server pbc gmp util http botan-2)
+target_include_directories(server PUBLIC /usr/include/botan-2)
 
-#target_include_directories(server PUBLIC include/pbc)
+add_executable(data_consumer data_consumer.cpp)
+target_link_libraries(data_consumer pbc gmp util http)
+
 
 
 
