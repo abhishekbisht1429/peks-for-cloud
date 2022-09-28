@@ -136,20 +136,20 @@ bool test(element_t &t1,
     return element_cmp(lhs, rhs) == 0;
 }
 
-http::response handle_data_owner(std::vector<std::string> path_components, tb_util::bytes body) {
+http::response handle_data_owner(std::vector<std::string> path_components, std::string body) {
     /* store the bytes in a file */
     std::ofstream store("../temp/store");
     uint32_t len = body.length();
     store.write((char*)&len, 4);
-    store.write(reinterpret_cast<const char *>(body.c_str()), body.length());
+    store.write(body.c_str(), body.length());
 
-//    std::vector<tb_util::bytes> data = tb_util::deserialize_bytes_vec(body);
+//    std::vector<tb_util::bytes> data = tb_util::deserialize_string_vec(body);
     return http::response(http::status::OK, "OK");
 }
 
-http::response handle_data_consumer(std::vector<std::string> path_components, tb_util::bytes body) {
+http::response handle_data_consumer(std::vector<std::string> path_components, std::string body) {
     /* deserialize vector received from data consumer */
-    std::vector<tb_util::bytes> data_vec = tb_util::deserialize_bytes_vec(body);
+    std::vector<std::string> data_vec = tb_util::deserialize_string_vec(body);
 
     /* deserialize data stored in store */
     std::ifstream ifs("../temp/store");
@@ -158,10 +158,10 @@ http::response handle_data_consumer(std::vector<std::string> path_components, tb
     }
     uint32_t len;
     ifs.read((char*)&len, 4);
-    uint8_t buf[len];
-    ifs.read((char*)buf, len);
-    tb_util::bytes stored_data(buf, len);
-    std::vector<tb_util::bytes> stored_data_vec = tb_util::deserialize_bytes_vec(stored_data);
+    char buf[len];
+    ifs.read(buf, len);
+    std::string stored_data(buf, len);
+    std::vector<std::string> stored_data_vec = tb_util::deserialize_string_vec(stored_data);
 
     element_t t1, t2, t3, tw, c1, c2;
     element_init_G1(t1, pairing);
@@ -170,12 +170,12 @@ http::response handle_data_consumer(std::vector<std::string> path_components, tb
     element_init_G1(tw, pairing);
     element_init_G2(c1, pairing);
     element_init_G2(c2, pairing);
-    string_to_element(t1, tb_util::b2s(data_vec[0]));
-    string_to_element(t2, tb_util::b2s(data_vec[1]));
-    string_to_element(t3, tb_util::b2s(data_vec[2]));
-    string_to_element(tw, tb_util::b2s(data_vec[3]));
-    string_to_element(c1, tb_util::b2s(stored_data_vec[0]));
-    string_to_element(c2, tb_util::b2s(stored_data_vec[1]));
+    string_to_element(t1, data_vec[0]);
+    string_to_element(t2, data_vec[1]);
+    string_to_element(t3, data_vec[2]);
+    string_to_element(tw, data_vec[3]);
+    string_to_element(c1, stored_data_vec[0]);
+    string_to_element(c2, stored_data_vec[1]);
     element_printf("t1: %B\n", t1);
     element_printf("t2: %B\n", t2);
     element_printf("t3: %B\n", t3);
@@ -186,7 +186,7 @@ http::response handle_data_consumer(std::vector<std::string> path_components, tb
     /* test */
     std::string res = "NO";
     for(int i=2; i<stored_data_vec.size(); ++i) {
-        std::string cw = tb_util::b2s(stored_data_vec[i]);
+        std::string cw = stored_data_vec[i];
         if(test(t1, t2, t3, tw, c1, c2, cw)) {
             std::cout<<cw<<" "<<"YES"<<std::endl;
             res = "YES";
@@ -194,7 +194,7 @@ http::response handle_data_consumer(std::vector<std::string> path_components, tb
         }
     }
     http::response resp(http::status::OK, "OK");
-    resp.set_body(tb_util::s2b(res));
+    resp.set_body(res);
     return resp;
 }
 

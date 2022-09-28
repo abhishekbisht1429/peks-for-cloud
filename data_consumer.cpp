@@ -131,7 +131,7 @@ int main(int argc, char **argv) {
 
     /* tw calculation */
 //    std::string kw = argv[1];
-    std::string kw = "are";
+    std::string kw = "the";
     element_t tw, h2_res;
     element_init_G1(tw, pairing);
     element_init_G1(h2_res, pairing);
@@ -140,11 +140,11 @@ int main(int argc, char **argv) {
     element_printf("tw: %B\n", tw);
 
     /* send t = (t1, t2, t3, tw) to cloud server */
-    std::vector<tb_util::bytes> t;
-    t.push_back(tb_util::s2b(element_to_string(t1)));
-    t.push_back(tb_util::s2b(element_to_string(t2)));
-    t.push_back(tb_util::s2b(element_to_string(t3)));
-    t.push_back(tb_util::s2b(element_to_string(tw)));
+    std::vector<std::string> t;
+    t.push_back(element_to_string(t1));
+    t.push_back(element_to_string(t2));
+    t.push_back(element_to_string(t3));
+    t.push_back(element_to_string(tw));
 
     // create http client and connect to cloud server
     http::http_client client;
@@ -154,12 +154,11 @@ int main(int argc, char **argv) {
 
     // create and send request
     auto request = http::request(http::method::GET, "/data_consumer");
-    auto body = tb_util::serialize_bytes_vec(t);
-    tb_util::output_bytes(std::cout, body);
+    auto body = tb_util::serialize_string_vec(t);
     request.set_body(body);
     auto resp = client.send_request(request);
     if(resp.get_status() == http::status::OK) {
-        std::cout<<"Reply: "<<tb_util::b2s(resp.get_body());
+        std::cout<<"Reply: "<<resp.get_body();
     } else {
         std::cout<<http::to_string(resp.get_status());
     }

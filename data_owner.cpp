@@ -80,7 +80,7 @@ void init_do() {
 }
 
 std::vector<std::string> load_keywords(int n) {
-    std::ifstream ifs("../temp/keywords.txt");
+    std::ifstream ifs("../temp/tesham_mutna_ruins.txt");
     std::vector<std::string> keywords;
     for(int i=0; i<n; ++i) {
         std::string keyword;
@@ -96,7 +96,6 @@ int main() {
     // Load param
     init_do();
 
-    // TODO: fix the problem of creating keys before they are used
     // load pkc - It must be created before this function is called
     std::ifstream ifs_pkc("../temp/pkc");
     if(! ifs_pkc.is_open()) {
@@ -108,7 +107,7 @@ int main() {
 
     /* select r in Z_p* */
     element_t r;
-    element_init_Zr(r, pairing); //TODO: check this out why isn't there any value for r ?
+    element_init_Zr(r, pairing);
     element_random(r);
     element_printf("r: %B\n", r);
 
@@ -127,10 +126,10 @@ int main() {
     element_printf("c2: %B\n", c2);
 
     //select private key
-    auto keywords = load_keywords(5);
-    std::vector<tb_util::bytes> c;
-    c.push_back(tb_util::s2b(element_to_string(c1)));
-    c.push_back(tb_util::s2b(element_to_string(c2)));
+    auto keywords = load_keywords(2000);
+    std::vector<std::string> c;
+    c.push_back(element_to_string(c1));
+    c.push_back(element_to_string(c2));
     for(auto w : keywords) {
         std::cout<<w<<"\n";
         element_t h2_res, pairing_res;
@@ -142,7 +141,7 @@ int main() {
         element_pairing(pairing_res, h2_res, c1);
         element_printf("pairing_res: %B\n", pairing_res);
         std::string cw = h3(pairing_res);
-        c.push_back(tb_util::s2b(cw));
+        c.push_back(cw);
     }
 
     /* Send c1, c2 and c to cloud server */
@@ -151,8 +150,7 @@ int main() {
     auto server_port = 8500;
     client.connect(server_addr, server_port);
     auto request = http::request(http::method::GET, "/data_owner");
-    auto body = tb_util::serialize_bytes_vec(c);
-    tb_util::output_bytes(std::cout, body);
+    auto body = tb_util::serialize_string_vec(c);
     request.set_body(body);
     client.send_request(request);
 }
