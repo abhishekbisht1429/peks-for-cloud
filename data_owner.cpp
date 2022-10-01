@@ -126,7 +126,7 @@ int main() {
     element_printf("c2: %B\n", c2);
 
     //select private key
-    auto keywords = load_keywords(2000);
+    auto keywords = load_keywords(200);
     std::vector<std::string> c;
     c.push_back(element_to_string(c1));
     c.push_back(element_to_string(c2));
@@ -144,10 +144,15 @@ int main() {
         c.push_back(cw);
     }
 
+    /* Load server server_ip and server_port */
+    std::ifstream ifs("../temp/server_config");
+    std::string server_ip;
+    uint16_t server_port;
+    ifs >> server_ip >> server_port;
+
     /* Send c1, c2 and c to cloud server */
     auto client = http::http_client();
-    auto server_addr = net_socket::ipv4_address("127.0.0.1");
-    auto server_port = 8500;
+    auto server_addr = net_socket::ipv4_address(server_ip);
     client.connect(server_addr, server_port);
     auto request = http::request(http::method::GET, "/data_owner");
     auto body = tb_util::serialize_string_vec(c);

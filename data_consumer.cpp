@@ -131,7 +131,7 @@ int main(int argc, char **argv) {
 
     /* tw calculation */
 //    std::string kw = argv[1];
-    std::string kw = "the";
+    std::string kw = "Spheres,";
     element_t tw, h2_res;
     element_init_G1(tw, pairing);
     element_init_G1(h2_res, pairing);
@@ -146,10 +146,15 @@ int main(int argc, char **argv) {
     t.push_back(element_to_string(t3));
     t.push_back(element_to_string(tw));
 
+    /* Load server server_ip and server_port */
+    std::ifstream ifs("../temp/server_config");
+    std::string server_ip;
+    uint16_t server_port;
+    ifs >> server_ip >> server_port;
+
     // create http client and connect to cloud server
     http::http_client client;
-    auto server_addr = net_socket::ipv4_address("127.0.0.1");
-    auto server_port = 8500;
+    auto server_addr = net_socket::ipv4_address(server_ip);
     client.connect(server_addr, server_port);
 
     // create and send request

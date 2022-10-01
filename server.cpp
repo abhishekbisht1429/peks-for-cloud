@@ -218,8 +218,15 @@ int main() {
     /* initialize params */
     init();
 
-    auto addr = net_socket::ipv4_address("0.0.0.0");
-    uint16_t port = 8500;
+    /* load server ip and port */
+    std::ifstream ifs("../temp/server_config");
+    std::string ip;
+    uint16_t port;
+    ifs>>ip>>port;
+    std::cout<<"Server IP: "<<ip<<std::endl;
+    std::cout<<"Server Port: "<<port<<std::endl;
+
+    auto addr = net_socket::ipv4_address(ip);
 
     auto server = http::http_server(addr, port);
     server.serve(handler);
