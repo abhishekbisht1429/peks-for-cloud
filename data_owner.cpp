@@ -64,7 +64,7 @@ void init_do() {
     } else {
         deserialize_element_t(sko, ifs_sko);
     }
-    element_printf("sko: %B\n", sko);
+//    element_printf("sko: %B\n", sko);
 
     // load of generate pko
     std::ifstream ifs_pko("../temp/pko");
@@ -109,7 +109,7 @@ int main() {
     element_t r;
     element_init_Zr(r, pairing);
     element_random(r);
-    element_printf("r: %B\n", r);
+//    element_printf("r: %B\n", r);
 
     /* calculate c1 */
     element_t c1, prod;
@@ -126,20 +126,22 @@ int main() {
     element_printf("c2: %B\n", c2);
 
     //select private key
+    std::cout<<"\n------------------Loading Keywords...-------------------\n";
     auto keywords = load_keywords(200);
+    std::cout<<keywords.size()<<" keywords loaded"<<std::endl;
     std::vector<std::string> c;
     c.push_back(element_to_string(c1));
     c.push_back(element_to_string(c2));
     for(auto w : keywords) {
-        std::cout<<w<<"\n";
+//        std::cout<<w<<"\n";
         element_t h2_res, pairing_res;
         element_init_G1(h2_res, pairing);
         element_init_GT(pairing_res, pairing);
 
         h2(h2_res, w);
-        element_printf("h2_res: %B\n", h2_res);
+//        element_printf("h2_res: %B\n", h2_res);
         element_pairing(pairing_res, h2_res, c1);
-        element_printf("pairing_res: %B\n", pairing_res);
+//        element_printf("pairing_res: %B\n", pairing_res);
         std::string cw = h3(pairing_res);
         c.push_back(cw);
     }
@@ -151,6 +153,7 @@ int main() {
     ifs >> server_ip >> server_port;
 
     /* Send c1, c2 and c to cloud server */
+    std::cout<<"\n---------Sending c1, c2 and c to cloud server------------\n"<<std::endl;
     auto client = http::http_client();
     auto server_addr = net_socket::ipv4_address(server_ip);
     client.connect(server_addr, server_port);

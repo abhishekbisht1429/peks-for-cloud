@@ -62,7 +62,7 @@ void init() {
     } else {
         deserialize_element_t(skcs, ifs_skcs);
     }
-    element_printf("skcs: %B\n", skcs);
+//    element_printf("skcs: %B\n", skcs);
 
     // load or generate pkcs
     std::ifstream ifs_pkcs("../temp/pkcs");
@@ -92,11 +92,11 @@ bool test(element_t &t1,
     element_init_GT(num, pairing);
     element_init_GT(denom, pairing);
     element_pairing(num, tw, c1);
-    element_printf("num: %B\n", num);
+//    element_printf("num: %B\n", num);
     element_pairing(denom, t1, c1);
-    element_printf("denom: %B\n", denom);
+//    element_printf("denom: %B\n", denom);
     element_div(phi, num, denom);
-    element_printf("phi: %B\n", phi);
+//    element_printf("phi: %B\n", phi);
 
     /* compute LHS */
     element_t lhs, h3_res_t, pairing_res_lhs, exp_res_lhs;
@@ -107,16 +107,16 @@ bool test(element_t &t1,
 
     std::string h3_res = h3(phi);
     element_from_hash(h3_res_t, (void *) h3_res.c_str(), h3_res.length());
-    element_printf("h3_res_t: %B\n", h3_res_t);
+//    element_printf("h3_res_t: %B\n", h3_res_t);
 
     element_pairing(pairing_res_lhs,t3, c1);
-    element_printf("pairing_res_lhs: %B\n", pairing_res_lhs);
+//    element_printf("pairing_res_lhs: %B\n", pairing_res_lhs);
     element_pow_zn(exp_res_lhs, pairing_res_lhs, skcs);
-    element_printf("exp_res_lhs: %B\n", exp_res_lhs);
+//    element_printf("exp_res_lhs: %B\n", exp_res_lhs);
 
 
     element_mul_zn(lhs, exp_res_lhs, h3_res_t);
-    element_printf("lhs: %B\n", lhs);
+//    element_printf("lhs: %B\n", lhs);
 
     /* compute RHS */
     element_t rhs, cw_t, pairing_res_rhs;
@@ -125,10 +125,10 @@ bool test(element_t &t1,
     element_init_GT(pairing_res_rhs, pairing);
 
     element_pairing(pairing_res_rhs, c2, t2);
-    element_printf("pairing_res_rhs: %B\n", pairing_res_rhs);
+//    element_printf("pairing_res_rhs: %B\n", pairing_res_rhs);
 
     element_from_hash(cw_t, (void *) cw.c_str(), cw.length());
-    element_printf("h3_res_t: %B\n", h3_res_t);
+//    element_printf("h3_res_t: %B\n", h3_res_t);
 
     element_mul_zn(rhs, pairing_res_rhs, cw_t);
 
@@ -138,6 +138,7 @@ bool test(element_t &t1,
 
 http::response handle_data_owner(std::vector<std::string> path_components, std::string body) {
     /* store the bytes in a file */
+    std::cout<<"------Storing c in local database----\n";
     std::ofstream store("../temp/store");
     uint32_t len = body.length();
     store.write((char*)&len, 4);
@@ -176,19 +177,19 @@ http::response handle_data_consumer(std::vector<std::string> path_components, st
     string_to_element(tw, data_vec[3]);
     string_to_element(c1, stored_data_vec[0]);
     string_to_element(c2, stored_data_vec[1]);
-    element_printf("t1: %B\n", t1);
-    element_printf("t2: %B\n", t2);
-    element_printf("t3: %B\n", t3);
-    element_printf("tw: %B\n", tw);
-    element_printf("c1: %B\n", c1);
-    element_printf("c2: %B\n", c2);
+//    element_printf("t1: %B\n", t1);
+//    element_printf("t2: %B\n", t2);
+//    element_printf("t3: %B\n", t3);
+//    element_printf("tw: %B\n", tw);
+//    element_printf("c1: %B\n", c1);
+//    element_printf("c2: %B\n", c2);
 
     /* test */
     std::string res = "NO";
     for(int i=2; i<stored_data_vec.size(); ++i) {
         std::string cw = stored_data_vec[i];
         if(test(t1, t2, t3, tw, c1, c2, cw)) {
-            std::cout<<cw<<" "<<"YES"<<std::endl;
+//            std::cout<<cw<<" "<<"YES"<<std::endl;
             res = "YES";
             break;
         }
@@ -199,9 +200,9 @@ http::response handle_data_consumer(std::vector<std::string> path_components, st
 }
 
 http::response handler(http::request req, net_socket::sock_address addr) {
-    std::cout << "Request received from " << addr.ip.to_string() << " " << addr.port << "\n";
+    std::cout << "\nRequest received from " << addr.ip.to_string() << " " << addr.port << "\n";
     auto path_components = tb_util::tokenize(req.get_resource(), "/");
-    std::cout<<"component 1 "<<path_components[1]<<"\n";
+//    std::cout<<"component 1 "<<path_components[1]<<"\n";
     if(path_components.size() < 2)
         return {http::status::NOT_FOUND, "Resource not found"};
     if(path_components[1] == "data_owner") {

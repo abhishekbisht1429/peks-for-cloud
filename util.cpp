@@ -14,20 +14,13 @@ void serialize_element_t(element_t &e, std::ostream &os) {
     uint32_t len = element_length_in_bytes(e);
     char buf[len];
     element_to_bytes((unsigned char*)buf, e);
-    std::cout<<"Serialzed data: ";
-    for(int i=0; i<len; ++i) {
-        std::cout<<(int)buf[i]<<" ";
-    }
-    std::cout<<std::endl;
     uint32_t temp = len;
     for(int i=0; i<4; ++i) {
-//        os<<(charT)(temp & 255);
         char val = (char)(temp & 255u);
         os.write(&val, 1);
         temp >>= 8;
     }
     for(int i=0; i<len; ++i) {
-//        os<<(charT)buf[i];
         os.write(buf + i, 1);
     }
     os.flush();
@@ -45,13 +38,7 @@ void deserialize_element_t(element_t &e, std::istream &is) {
     char buf[len];
     for(int i=0; i<len; ++i)
         is.read(buf+i, 1);
-    std::cout<<"deserialized data: ";
-    for(int i=0;i<len; ++i) {
-        std::cout<<(int)buf[i]<<" ";
-    }
-    std::cout<<"\n";
-    int count = element_from_bytes(e, (unsigned char*)buf);
-    std::cout<<"count: "<<count<<"\n";
+    element_from_bytes(e, (unsigned char*)buf);
 }
 
 std::string element_to_string(element_t &e) {

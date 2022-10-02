@@ -52,7 +52,7 @@ void init_dc() {
     } else {
         deserialize_element_t(g, ifs_g);
     }
-    element_printf("%B\n", g);
+    element_printf("g %B\n", g);
 
     // load or generate skc
     element_init_Zr(skc, pairing);
@@ -75,6 +75,7 @@ void init_dc() {
     } else {
         deserialize_element_t(pkc, ifs_pkc);
     }
+    element_printf("pkc %B\n", pkc);
 
 }
 
