@@ -9,6 +9,7 @@
 #include "util.h"
 #include "tb_lib/http/http_client.h"
 #include "tb_lib/util.h"
+#include <chrono>
 
 pairing_t pairing;
 
@@ -127,11 +128,12 @@ int main() {
 
     //select private key
     std::cout<<"\n------------------Loading Keywords...-------------------\n";
-    auto keywords = load_keywords(200);
+    auto keywords = load_keywords(2000);
     std::cout<<keywords.size()<<" keywords loaded"<<std::endl;
     std::vector<std::string> c;
     c.push_back(element_to_string(c1));
     c.push_back(element_to_string(c2));
+    auto start = std::chrono::system_clock::now();
     for(auto w : keywords) {
 //        std::cout<<w<<"\n";
         element_t h2_res, pairing_res;
@@ -145,6 +147,10 @@ int main() {
         std::string cw = h3(pairing_res);
         c.push_back(cw);
     }
+    auto end = std::chrono::system_clock::now();
+
+    auto diff = end - start;
+    std::cout<<"Duration: "<<std::chrono::duration<double, std::milli>(diff).count()<<" ms";
 
     /* Load server server_ip and server_port */
     std::ifstream ifs("../temp/server_config");

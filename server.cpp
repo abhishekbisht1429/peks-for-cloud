@@ -149,6 +149,7 @@ http::response handle_data_owner(std::vector<std::string> path_components, std::
 }
 
 http::response handle_data_consumer(std::vector<std::string> path_components, std::string body) {
+    auto start = std::chrono::system_clock::now();
     /* deserialize vector received from data consumer */
     std::vector<std::string> data_vec = tb_util::deserialize_string_vec(body);
 
@@ -196,6 +197,9 @@ http::response handle_data_consumer(std::vector<std::string> path_components, st
     }
     http::response resp(http::status::OK, "OK");
     resp.set_body(res);
+    auto end = std::chrono::system_clock::now();
+    auto diff = end - start;
+    std::cout<<"Duration: "<<std::chrono::duration<double, std::milli>(diff).count()<<" ms\n";
     return resp;
 }
 
