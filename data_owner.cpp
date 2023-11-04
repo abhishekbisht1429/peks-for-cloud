@@ -7,8 +7,8 @@
 #include <fstream>
 #include <openssl/sha.h>
 #include "util.h"
-#include "tb_lib/http/http_client.h"
-#include "tb_lib/util.h"
+#include "net/http/http_client.h"
+#include "net/util.h"
 #include <chrono>
 
 pairing_t pairing;

@@ -1,5 +1,5 @@
 venv
 .idea
 cmake-build-debug
-tb_lib
+temp/tb_lib
 temp

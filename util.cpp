@@ -8,7 +8,7 @@
 #include <iostream>
 #include <openssl/evp.h>
 #include <pbc/pbc.h>
-#include "tb_lib/util.h"
+#include "net/util.h"
 
 void serialize_element_t(element_t &e, std::ostream &os) {
     uint32_t len = element_length_in_bytes(e);

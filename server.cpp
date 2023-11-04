@@ -1,11 +1,11 @@
 #include <iostream>
-#include "tb_lib/http/http_server.cpp"
-#include "tb_lib/net_socket/ipv4_address.h"
-#include "tb_lib/util.h"
+#include "net/http/http_server.h"
+#include "net/net_socket/ipv4_address.h"
+#include "util.h"
 #include <vector>
 #include <fstream>
 #include <pbc/pbc.h>
-#include "util.h"
+#include "net/util.h"
 
 
 pairing_t pairing;
