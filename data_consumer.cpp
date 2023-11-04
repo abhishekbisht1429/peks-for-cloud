@@ -26,7 +26,7 @@ element_t pkcs;
 
 void init_dc() {
     /* Load pairing */
-    FILE *fp = std::fopen("../temp/param", "r");
+    FILE *fp = std::fopen("../data/param", "r");
     if(!fp) {
         std::cout<<"Failed to open param file";
         exit(1);
@@ -148,7 +148,7 @@ int main(int argc, char **argv) {
     t.push_back(element_to_string(tw));
 
     /* Load server server_ip and server_port */
-    std::ifstream ifs("../temp/server_config");
+    std::ifstream ifs("../data/server_config");
     std::string server_ip;
     uint16_t server_port;
     ifs >> server_ip >> server_port;

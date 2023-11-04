@@ -24,7 +24,7 @@ void init() {
     size_t count = 0;
 
     /* Load pairing */
-    FILE *fp = std::fopen("../temp/param", "r");
+    FILE *fp = std::fopen("../data/param", "r");
     if(!fp) {
         std::cout<<"Failed to open param file";
         exit(1);
@@ -224,7 +224,7 @@ int main() {
     init();
 
     /* load server ip and port */
-    std::ifstream ifs("../temp/server_config");
+    std::ifstream ifs("../data/server_config");
     std::string ip;
     uint16_t port;
     ifs>>ip>>port;

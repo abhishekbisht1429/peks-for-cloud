@@ -27,7 +27,7 @@ element_t pkc;
 
 void init_do() {
     /* Load pairing */
-    FILE *fp = std::fopen("../temp/param", "r");
+    FILE *fp = std::fopen("../data/param", "r");
     if(!fp) {
         std::cout<<"Failed to open param file";
         exit(1);
@@ -81,7 +81,7 @@ void init_do() {
 }
 
 std::vector<std::string> load_keywords(int n) {
-    std::ifstream ifs("../temp/tesham_mutna_ruins.txt");
+    std::ifstream ifs("../data/tesham_mutna_ruins.txt");
     std::vector<std::string> keywords;
     for(int i=0; i<n; ++i) {
         std::string keyword;
@@ -153,7 +153,7 @@ int main() {
     std::cout<<"Duration: "<<std::chrono::duration<double, std::milli>(diff).count()<<" ms";
 
     /* Load server server_ip and server_port */
-    std::ifstream ifs("../temp/server_config");
+    std::ifstream ifs("../data/server_config");
     std::string server_ip;
     uint16_t server_port;
     ifs >> server_ip >> server_port;
