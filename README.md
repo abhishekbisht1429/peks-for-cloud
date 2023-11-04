@@ -10,6 +10,7 @@ Cite the following article to use this codebase in your work.
 - Install `cmake` on your system if not already installed.
 - Run `cmake -S . -B cmake-build-debug`
 - Run `cmake --build cmake-build-debug`
+- Create a directory `temp` inside the project root.
 
 ### Run Project
 Run `cd cmake-build-debug`
@@ -22,3 +23,8 @@ Run `cd cmake-build-debug`
 
 #### Data Consumer command
 `./data_consumer`
+
+## NOTE:
+The data owner and data consumer files needs to be run twice when executing the project for the first time.
+This is required in order to generated the keys. For simplicity we have not used a key distribution server and instead are using 
+the `temp` directory to share the keys with one another.
